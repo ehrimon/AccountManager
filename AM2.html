@@ -1,7 +1,4 @@
 
-Finance tracker · HTML
-Copy
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,6 +17,50 @@ Copy
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+        }
+
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .login-form h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
         .container {
@@ -376,6 +417,14 @@ Copy
             .modal-buttons button {
                 width: 100%;
             }
+
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            .login-header h1 {
+                font-size: 26px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -394,11 +443,38 @@ Copy
             .card h2 {
                 font-size: 18px;
             }
+
+            .login-container {
+                padding: 25px 15px;
+            }
+
+            .login-header h1 {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>💰 Finance Tracker</h1>
+                <p>Developed By: Emam Hossain Rimon</p>
+            </div>
+            <div class="login-form">
+                <h2>Login</h2>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="off">
+                </div>
+                <button class="btn btn-primary" onclick="login()" style="width: 100%;">Login</button>
+                <p id="loginError" style="color: #f56565; margin-top: 10px; font-size: 14px; display: none;">Incorrect password. Please try again.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="mainApp" style="display: none;">
         <div class="header">
             <div>
                 <h1>💰 Finance Tracker</h1>
@@ -408,6 +484,7 @@ Copy
                 <span class="current-user" id="currentUser">No user selected</span>
                 <button class="btn btn-secondary" onclick="showUserModal()">Switch User</button>
                 <button class="btn btn-primary" onclick="showAddUserModal()">+ Add User</button>
+                <button class="btn btn-danger" onclick="logout()">Logout</button>
             </div>
         </div>
 
@@ -463,7 +540,7 @@ Copy
                         </div>
                         <div class="form-group">
                             <label>4-Digit PIN</label>
-                            <input type="password" id="pinCode" maxlength="4" pattern="[0-9]{4}" required placeholder="Enter 4-digit PIN" inputmode="numeric">
+                            <input type="text" id="pinCode" maxlength="4" pattern="[0-9]{4}" required placeholder="Enter 4-digit PIN" inputmode="numeric">
                             <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">Enter a 4-digit security PIN for this transaction</small>
                         </div>
                         <div class="form-group">
@@ -526,18 +603,68 @@ Copy
     </div>
 
     <script>
+        const MASTER_PASSWORD = 'Dil995038';
         let users = JSON.parse(localStorage.getItem('financeUsers')) || {};
         let currentUser = localStorage.getItem('currentUser') || null;
+        let isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
 
-        // Initialize
-        if (Object.keys(users).length === 0) {
-            users['Default User'] = {
-                transactions: [],
-                balances: { bkash: 0, nagad: 0, rocket: 0 }
-            };
-            localStorage.setItem('financeUsers', JSON.stringify(users));
-            currentUser = 'Default User';
-            localStorage.setItem('currentUser', currentUser);
+        // Check if user is logged in
+        if (isLoggedIn) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+        }
+
+        function login() {
+            const password = document.getElementById('loginPassword').value;
+            
+            if (password === MASTER_PASSWORD) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('loginError').style.display = 'none';
+                initializeApp();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+                document.getElementById('loginPassword').value = '';
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                sessionStorage.removeItem('isLoggedIn');
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'none';
+                document.getElementById('loginPassword').value = '';
+            }
+        }
+
+        // Allow Enter key to login
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginInput = document.getElementById('loginPassword');
+            if (loginInput) {
+                loginInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        login();
+                    }
+                });
+            }
+        });
+
+        function initializeApp() {
+            // Initialize on load
+            if (Object.keys(users).length === 0) {
+                users['Default User'] = {
+                    transactions: [],
+                    balances: { bkash: 0, nagad: 0, rocket: 0 }
+                };
+                localStorage.setItem('financeUsers', JSON.stringify(users));
+                currentUser = 'Default User';
+                localStorage.setItem('currentUser', currentUser);
+            }
+
+            document.getElementById('currentUser').textContent = currentUser || 'No user selected';
+            updateBalances();
+            displayTransactions();
         }
 
         function saveData() {
@@ -592,7 +719,7 @@ Copy
                             <span>${t.method.toUpperCase()}</span>
                             <span>${t.date}</span>
                         </div>
-                        ${t.pin ? `<div style="margin-top: 5px; font-size: 12px; color: #666;">PIN: ••••</div>` : ''}
+                        ${t.pin ? `<div style="margin-top: 5px; font-size: 12px; color: #666;">PIN: ${t.pin}</div>` : ''}
                         ${t.description ? `<p style="margin-top: 8px; color: #666; font-size: 13px;">${t.description}</p>` : ''}
                         <button class="delete-btn" onclick="deleteTransaction(${index})">Delete</button>
                     </div>
@@ -781,10 +908,10 @@ Copy
             alert('User name updated successfully!');
         }
 
-        // Initialize on load
-        document.getElementById('currentUser').textContent = currentUser || 'No user selected';
-        updateBalances();
-        displayTransactions();
+        // Initialize on load if already logged in
+        if (isLoggedIn) {
+            initializeApp();
+        }
     </script>
 </body>
 </html>
