@@ -1,0 +1,790 @@
+
+Finance tracker · HTML
+Copy
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Personal Finance Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .current-user {
+            background: #f0f0f0;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .balance-cards {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .balance-card.bkash {
+            background: linear-gradient(135deg, #e2136e 0%, #c91163 100%);
+        }
+
+        .balance-card.nagad {
+            background: linear-gradient(135deg, #f68820 0%, #e57115 100%);
+        }
+
+        .balance-card.rocket {
+            background: linear-gradient(135deg, #8b3a9d 0%, #6b2d7a 100%);
+        }
+
+        .balance-card h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .balance-card .amount {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 16px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .transaction-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .transaction-item {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .transaction-item.cash-in {
+            border-left-color: #48bb78;
+        }
+
+        .transaction-item.cash-out {
+            border-left-color: #f56565;
+        }
+
+        .transaction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .transaction-type {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .transaction-amount {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .transaction-amount.positive {
+            color: #48bb78;
+        }
+
+        .transaction-amount.negative {
+            color: #f56565;
+        }
+
+        .transaction-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .user-select {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .user-card {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .user-card:hover {
+            background: #edf2f7;
+            border-color: #667eea;
+        }
+
+        .user-card.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #f56565;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .delete-btn:hover {
+            background: #e53e3e;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .user-info {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .user-info button {
+                width: 100%;
+            }
+
+            .current-user {
+                width: 100%;
+                text-align: center;
+            }
+
+            .balance-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+
+            .user-select {
+                grid-template-columns: 1fr;
+            }
+
+            .transaction-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .transaction-amount {
+                font-size: 20px;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+
+            .modal-buttons button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .balance-card .amount {
+                font-size: 24px;
+            }
+
+            .card h2 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>💰 Finance Tracker</h1>
+                <p style="font-size: 12px; color: #666; margin-top: 5px;">Developed By: Emam Hossain Rimon</p>
+            </div>
+            <div class="user-info">
+                <span class="current-user" id="currentUser">No user selected</span>
+                <button class="btn btn-secondary" onclick="showUserModal()">Switch User</button>
+                <button class="btn btn-primary" onclick="showAddUserModal()">+ Add User</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div>
+                <div class="card">
+                    <h2>Account Balances</h2>
+                    <div class="balance-cards">
+                        <div class="balance-card bkash">
+                            <h3>bKash</h3>
+                            <div class="amount" id="bkashBalance">৳0.00</div>
+                        </div>
+                        <div class="balance-card nagad">
+                            <h3>Nagad</h3>
+                            <div class="amount" id="nagadBalance">৳0.00</div>
+                        </div>
+                        <div class="balance-card rocket">
+                            <h3>Rocket</h3>
+                            <div class="amount" id="rocketBalance">৳0.00</div>
+                        </div>
+                        <div class="balance-card">
+                            <h3>Total Balance</h3>
+                            <div class="amount" id="totalBalance">৳0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Add Transaction</h2>
+                    <form id="transactionForm">
+                        <div class="form-group">
+                            <label>Payment Method</label>
+                            <select id="paymentMethod" required>
+                                <option value="">Select method</option>
+                                <option value="bkash">bKash</option>
+                                <option value="nagad">Nagad</option>
+                                <option value="rocket">Rocket</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Transaction Type</label>
+                            <select id="transactionType" required>
+                                <option value="">Select type</option>
+                                <option value="cash-in">Cash In (+)</option>
+                                <option value="send-money">Send Money (-)</option>
+                                <option value="cashout">Cash Out (-)</option>
+                                <option value="payment">Payment (-)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Amount (৳)</label>
+                            <input type="number" id="amount" step="0.01" min="0.01" required placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>4-Digit PIN</label>
+                            <input type="password" id="pinCode" maxlength="4" pattern="[0-9]{4}" required placeholder="Enter 4-digit PIN" inputmode="numeric">
+                            <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">Enter a 4-digit security PIN for this transaction</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Description (Optional)</label>
+                            <textarea id="description" rows="3" placeholder="Add notes..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Add Transaction</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Transaction History</h2>
+                <div class="transaction-list" id="transactionList">
+                    <p style="text-align: center; color: #999; padding: 40px;">No transactions yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div class="modal" id="userModal">
+        <div class="modal-content">
+            <h2>Select User</h2>
+            <div class="user-select" id="userSelect"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-danger" onclick="closeUserModal()" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal" id="addUserModal">
+        <div class="modal-content">
+            <h2>Add New User</h2>
+            <div class="form-group">
+                <label>User Name</label>
+                <input type="text" id="newUserName" placeholder="Enter name">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-danger" onclick="closeAddUserModal()" style="flex: 1;">Cancel</button>
+                <button class="btn btn-primary" onclick="addUser()" style="flex: 1;">Add User</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal" id="editUserModal">
+        <div class="modal-content">
+            <h2>Edit User Name</h2>
+            <div class="form-group">
+                <label>New User Name</label>
+                <input type="text" id="editUserName" placeholder="Enter new name">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-danger" onclick="closeEditUserModal()" style="flex: 1;">Cancel</button>
+                <button class="btn btn-primary" onclick="saveEditUser()" style="flex: 1;">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let users = JSON.parse(localStorage.getItem('financeUsers')) || {};
+        let currentUser = localStorage.getItem('currentUser') || null;
+
+        // Initialize
+        if (Object.keys(users).length === 0) {
+            users['Default User'] = {
+                transactions: [],
+                balances: { bkash: 0, nagad: 0, rocket: 0 }
+            };
+            localStorage.setItem('financeUsers', JSON.stringify(users));
+            currentUser = 'Default User';
+            localStorage.setItem('currentUser', currentUser);
+        }
+
+        function saveData() {
+            localStorage.setItem('financeUsers', JSON.stringify(users));
+        }
+
+        function updateBalances() {
+            if (!currentUser || !users[currentUser]) return;
+
+            const userData = users[currentUser];
+            const balances = { bkash: 0, nagad: 0, rocket: 0 };
+
+            userData.transactions.forEach(t => {
+                const multiplier = t.type === 'cash-in' ? 1 : -1;
+                balances[t.method] += t.amount * multiplier;
+            });
+
+            userData.balances = balances;
+
+            document.getElementById('bkashBalance').textContent = `৳${balances.bkash.toFixed(2)}`;
+            document.getElementById('nagadBalance').textContent = `৳${balances.nagad.toFixed(2)}`;
+            document.getElementById('rocketBalance').textContent = `৳${balances.rocket.toFixed(2)}`;
+            document.getElementById('totalBalance').textContent = `৳${(balances.bkash + balances.nagad + balances.rocket).toFixed(2)}`;
+
+            saveData();
+        }
+
+        function displayTransactions() {
+            if (!currentUser || !users[currentUser]) return;
+
+            const list = document.getElementById('transactionList');
+            const transactions = users[currentUser].transactions;
+
+            if (transactions.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No transactions yet</p>';
+                return;
+            }
+
+            list.innerHTML = transactions.map((t, index) => {
+                const isPositive = t.type === 'cash-in';
+                const sign = isPositive ? '+' : '-';
+                const typeClass = isPositive ? 'cash-in' : 'cash-out';
+                const amountClass = isPositive ? 'positive' : 'negative';
+                
+                return `
+                    <div class="transaction-item ${typeClass}">
+                        <div class="transaction-header">
+                            <span class="transaction-type">${t.typeLabel}</span>
+                            <span class="transaction-amount ${amountClass}">${sign}৳${t.amount.toFixed(2)}</span>
+                        </div>
+                        <div class="transaction-details">
+                            <span>${t.method.toUpperCase()}</span>
+                            <span>${t.date}</span>
+                        </div>
+                        ${t.pin ? `<div style="margin-top: 5px; font-size: 12px; color: #666;">PIN: ••••</div>` : ''}
+                        ${t.description ? `<p style="margin-top: 8px; color: #666; font-size: 13px;">${t.description}</p>` : ''}
+                        <button class="delete-btn" onclick="deleteTransaction(${index})">Delete</button>
+                    </div>
+                `;
+            }).reverse().join('');
+        }
+
+        function deleteTransaction(index) {
+            if (!currentUser || !users[currentUser]) return;
+            
+            if (confirm('Are you sure you want to delete this transaction?')) {
+                users[currentUser].transactions.splice(index, 1);
+                updateBalances();
+                displayTransactions();
+            }
+        }
+
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (!currentUser || !users[currentUser]) {
+                alert('Please select a user first!');
+                return;
+            }
+
+            const method = document.getElementById('paymentMethod').value;
+            const type = document.getElementById('transactionType').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const pin = document.getElementById('pinCode').value;
+            const description = document.getElementById('description').value;
+
+            // Validate PIN
+            if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+                alert('Please enter a valid 4-digit PIN!');
+                return;
+            }
+
+            const typeLabels = {
+                'cash-in': 'Cash In',
+                'send-money': 'Send Money',
+                'cashout': 'Cash Out',
+                'payment': 'Payment'
+            };
+
+            const transaction = {
+                method,
+                type,
+                typeLabel: typeLabels[type],
+                amount,
+                pin,
+                description,
+                date: new Date().toLocaleString()
+            };
+
+            users[currentUser].transactions.push(transaction);
+            updateBalances();
+            displayTransactions();
+
+            this.reset();
+        });
+
+        function showUserModal() {
+            const modal = document.getElementById('userModal');
+            const userSelect = document.getElementById('userSelect');
+            
+            userSelect.innerHTML = Object.keys(users).map(userName => `
+                <div class="user-card ${userName === currentUser ? 'active' : ''}" onclick="switchUser('${userName}')">
+                    <div>${userName}</div>
+                    <button class="delete-btn" style="background: #4299e1; margin-right: 5px;" onclick="event.stopPropagation(); editUser('${userName}')">Edit</button>
+                    ${userName !== 'Default User' ? `<button class="delete-btn" onclick="event.stopPropagation(); deleteUser('${userName}')">Delete</button>` : ''}
+                </div>
+            `).join('');
+
+            modal.classList.add('active');
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.remove('active');
+        }
+
+        function switchUser(userName) {
+            currentUser = userName;
+            localStorage.setItem('currentUser', currentUser);
+            document.getElementById('currentUser').textContent = currentUser;
+            updateBalances();
+            displayTransactions();
+            closeUserModal();
+        }
+
+        function showAddUserModal() {
+            document.getElementById('addUserModal').classList.add('active');
+        }
+
+        function closeAddUserModal() {
+            document.getElementById('addUserModal').classList.remove('active');
+            document.getElementById('newUserName').value = '';
+        }
+
+        function addUser() {
+            const userName = document.getElementById('newUserName').value.trim();
+            
+            if (!userName) {
+                alert('Please enter a user name!');
+                return;
+            }
+
+            if (users[userName]) {
+                alert('User already exists!');
+                return;
+            }
+
+            users[userName] = {
+                transactions: [],
+                balances: { bkash: 0, nagad: 0, rocket: 0 }
+            };
+
+            saveData();
+            switchUser(userName);
+            closeAddUserModal();
+        }
+
+        function deleteUser(userName) {
+            if (confirm(`Are you sure you want to delete ${userName} and all their transactions?`)) {
+                delete users[userName];
+                saveData();
+                
+                if (currentUser === userName) {
+                    currentUser = Object.keys(users)[0] || null;
+                    localStorage.setItem('currentUser', currentUser);
+                    if (currentUser) {
+                        updateBalances();
+                        displayTransactions();
+                    }
+                }
+                
+                showUserModal();
+            }
+        }
+
+        let userBeingEdited = null;
+
+        function editUser(userName) {
+            userBeingEdited = userName;
+            document.getElementById('editUserName').value = userName;
+            closeUserModal();
+            document.getElementById('editUserModal').classList.add('active');
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').classList.remove('active');
+            document.getElementById('editUserName').value = '';
+            userBeingEdited = null;
+        }
+
+        function saveEditUser() {
+            const newName = document.getElementById('editUserName').value.trim();
+            
+            if (!newName) {
+                alert('Please enter a user name!');
+                return;
+            }
+
+            if (newName === userBeingEdited) {
+                closeEditUserModal();
+                return;
+            }
+
+            if (users[newName]) {
+                alert('A user with this name already exists!');
+                return;
+            }
+
+            // Copy user data to new name
+            users[newName] = users[userBeingEdited];
+            delete users[userBeingEdited];
+
+            // Update current user if needed
+            if (currentUser === userBeingEdited) {
+                currentUser = newName;
+                localStorage.setItem('currentUser', currentUser);
+                document.getElementById('currentUser').textContent = currentUser;
+            }
+
+            saveData();
+            closeEditUserModal();
+            alert('User name updated successfully!');
+        }
+
+        // Initialize on load
+        document.getElementById('currentUser').textContent = currentUser || 'No user selected';
+        updateBalances();
+        displayTransactions();
+    </script>
+</body>
+</html>
